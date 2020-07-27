@@ -7,13 +7,3 @@ export function sum(arr: Int16Array): i32 {
   }
   return sum;
 }
-
-export function sumUpTo(x: i32): i32 {
-  let i = 0;
-  let sum = 0;
-  while (i <= x) {
-    sum += i;
-    ++i;
-  }
-  return sum;
-}
