@@ -7,30 +7,53 @@
 <link rel="icon" href="https://assemblyscript.org/favicon.ico" type="image/x-icon" />
 </head>
 <body>
-<div id="result"></div>
+<script src="https://unpkg.com/as-bind@0.3.5/dist/as-bind.iife.js"></script>
 <script>"use strict";
 
-var resultElem = document.getElementById("result");
+const { AsBind } = AsBindIIFE;
 
 // Compute the size of and instantiate the module's memory
-var memory = new WebAssembly.Memory({ initial: 1 });
+var memory = new WebAssembly.Memory({ initial: 10 });
+
+var ints = new Int16Array(16 * 1000)
+for (var i = 0; i < ints.length; i++) {
+  ints[i] = i;
+}
+
+var x = 1000000;
+
+function add(arr) {
+  var sum = 0;
+  for (var i = 0; i < arr.length; i++) {
+    sum += arr[i];
+  }
+  return sum;
+}
+
+function sumUpTo(x) {
+  let i = 0;
+  let sum = 0;
+  while (i <= x) {
+    sum += i;
+    ++i;
+  }
+  return sum;
+}
 
 // Fetch and instantiate the module
 fetch("build/optimized.wasm")
 .then(response => response.arrayBuffer())
-.then(buffer => WebAssembly.instantiate(buffer, {
-  env: {
-    memory,
-    abort(...args) {
-      console.log(...args);
-    }
-  },
-  Math
-}))
-.then(module => {
-  var exports = module.instance.exports;
-  var result = exports.add(1, 1);
-  resultElem.innerHTML = result;
+.then(async module => {
+  const asBindInstance = await AsBind.instantiate(module);
+  var exports = asBindInstance.exports;
+  console.time("WASM");
+  var resultWASM = exports.sum(ints);
+  console.timeEnd("WASM");
+  console.log("resultWASM", resultWASM);
+  console.time("JS");
+  var resultJS = add(ints);
+  console.timeEnd("JS");
+  console.log("resultJS", resultJS);
 }).catch(err => {
   console.log("Failed to load WASM: ", err.message);
   console.log(err.stack);
