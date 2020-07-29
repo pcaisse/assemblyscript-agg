@@ -15,17 +15,27 @@ const { AsBind } = AsBindIIFE;
 // Compute the size of and instantiate the module's memory
 var memory = new WebAssembly.Memory({ initial: 10 });
 
-var ints = new Int16Array(16 * 1000000);
+var x = 10 ** 4;
+
+var ints = new Int16Array(x);
 for (var i = 0; i < ints.length; i++) {
   ints[i] = i;
 }
 
 function sum(arr) {
   var sum = 0;
-  for (var i = 0; i < arr.length; i++) {
+  for (var i = 0, l = arr.length; i < l; i++) {
     sum += arr[i];
   }
   return sum;
+}
+
+function sumUpTo(k) {
+  var s = 0;
+  for (var i = 0; i < k; i++) {
+    s += i;
+  }
+  return s;
 }
 
 // Fetch and instantiate the module
@@ -35,14 +45,24 @@ fetch("build/optimized.wasm")
   // as-bind includes helpers for working with higher level data structures like TypedArrays
   const asBindInstance = await AsBind.instantiate(module);
   var exports = asBindInstance.exports;
-  console.time("WASM");
-  var resultWASM = exports.sum(ints);
-  console.timeEnd("WASM");
-  console.log("resultWASM", resultWASM);
-  console.time("JS");
-  var resultJS = sum(ints);
-  console.timeEnd("JS");
-  console.log("resultJS", resultJS);
+  // sum up to a given number
+  console.time("WASM sumUpTo");
+  var resultWASMSumUpTo = exports.sumUpTo(x);
+  console.timeEnd("WASM sumUpTo");
+  console.log("result in WASM - sum all numbers up to", x, resultWASMSumUpTo);
+  console.time("JS sumUpTo");
+  var resultJSSumUpTo = sumUpTo(x);
+  console.timeEnd("JS sumUpTo");
+  console.log("result in JS - sum all numbers up to", x, resultJSSumUpTo);
+  // sum all numbers in array
+  console.time("WASM sum");
+  var resultWASMSum = exports.sum(ints);
+  console.timeEnd("WASM sum");
+  console.log("result in WASM - sum all numbers in array", x, resultWASMSum);
+  console.time("JS sum");
+  var resultJSSum = sum(ints);
+  console.timeEnd("JS sum");
+  console.log("result in JS - sum all numbers in array", x, resultJSSum);
 }).catch(err => {
   console.log("Failed to load WASM: ", err.message);
   console.log(err.stack);
