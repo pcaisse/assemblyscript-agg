@@ -44,25 +44,38 @@ fetch("build/optimized.wasm")
 .then(async module => {
   // as-bind includes helpers for working with higher level data structures like TypedArrays
   const asBindInstance = await AsBind.instantiate(module);
+  var numTries = 10;
   var exports = asBindInstance.exports;
   // sum up to a given number
-  console.time("WASM sumUpTo");
-  var resultWASMSumUpTo = exports.sumUpTo(x);
-  console.timeEnd("WASM sumUpTo");
-  console.log("result in WASM - sum all numbers up to", x, resultWASMSumUpTo);
-  console.time("JS sumUpTo");
-  var resultJSSumUpTo = sumUpTo(x);
-  console.timeEnd("JS sumUpTo");
-  console.log("result in JS - sum all numbers up to", x, resultJSSumUpTo);
+  var resultWASMSumUpTo = [];
+  for (var i = 0; i < numTries; i++) {
+    console.time("WASM sumUpTo" + i);
+    resultWASMSumUpTo[i] = exports.sumUpTo(x);
+    console.timeEnd("WASM sumUpTo" + i);
+  }
+  console.log("result in WASM - sum all numbers up to", x, resultWASMSumUpTo[0]);
+  var resultJSSumUpTo = [];
+  for (var i = 0; i < numTries; i++) {
+    console.time("JS sumUpTo" + i);
+    resultJSSumUpTo[i] = sumUpTo(x);
+    console.timeEnd("JS sumUpTo" + i);
+  }
+  console.log("result in JS - sum all numbers up to", x, resultJSSumUpTo[0]);
   // sum all numbers in array
-  console.time("WASM sum");
-  var resultWASMSum = exports.sum(ints);
-  console.timeEnd("WASM sum");
-  console.log("result in WASM - sum all numbers in array", x, resultWASMSum);
-  console.time("JS sum");
-  var resultJSSum = sum(ints);
-  console.timeEnd("JS sum");
-  console.log("result in JS - sum all numbers in array", x, resultJSSum);
+  var resultWASMSum = [];
+  for (var i = 0; i < numTries; i++) {
+    console.time("WASM sum" + i);
+    resultWASMSum[i] = exports.sum(ints);
+    console.timeEnd("WASM sum" + i);
+  }
+  console.log("result in WASM - sum all numbers in array", x, resultWASMSum[0]);
+  var resultJSSum = [];
+  for (var i = 0; i < numTries; i++) {
+    console.time("JS sum" + i);
+    resultJSSum[i] = sum(ints);
+    console.timeEnd("JS sum" + i);
+  }
+  console.log("result in JS - sum all numbers in array", x, resultJSSum[0]);
 }).catch(err => {
   console.log("Failed to load WASM: ", err.message);
   console.log(err.stack);
